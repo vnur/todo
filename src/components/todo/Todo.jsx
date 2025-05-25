@@ -4,77 +4,82 @@ export const Todo = () => {
   const initialData = {
     inputData: "",
     data: [],
-    editingIndex:null
+    Indexno: null,
   };
 
-    const reducer = (state, action) => {
+  const reducer = (state, action) => {
     switch (action.type) {
       case "add":
         return { ...state, inputData: action.payload };
-        
-        case "submit":
-          if(state.inputData.trim()==="")return {...state}
-          if(state.editingIndex !==null){
-            const updatedData = state.data
-            updatedData[state.editingIndex]=state.inputData
-            return{...state, inputData:"",editingIndex:null}
-          }
-          return {
+
+      case "submit":
+        if (state.Indexno !== null) {
+          const updateData = state.data;
+          updateData[state.Indexno] = state.inputData;
+          return { ...state, data: updateData, inputData:"" };
+        }
+        return {
           ...state,
           data: [...state.data, state.inputData],
           inputData: "",
         };
 
       case "delete":
-      const newData =state.data.filter((item)=>{
-        return item !== action.payload
-      })
-      return {
-        ...state, data:newData
-      }
-
+        const newData = state.data.filter((item) => item !== action.payload);
+        return { ...state, data: newData };
 
       case "edit":
-        return {...state, inputData:action.payload.value,editingIndex:action.payload.index}
+        const data = state.data.indexOf(action.payload);
+        return { ...state, inputData: action.payload, Indexno: data };
 
-     default:
-        return state
-        
-
+      default:
+        return state;
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    dispatch({ type: "submit" });
   };
 
   const [state, dispatch] = useReducer(reducer, initialData);
   return (
     <>
-      <div>Todo list </div>
-
-      <div>
-          <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            dispatch({ type: "submit" });
-          }}
-        >
+      <div className="text-center">
+        <form onSubmit={handleSubmit}>
           <input
             type="text"
+            className="border-2 "
             value={state.inputData}
-            onChange={(e) => {
-              dispatch({ type: "add", payload: e.target.value });
-            }}
+            onChange={(e) => dispatch({ type: "add", payload: e.target.value })}
           />
-          <button>{state.editingIndex !==null ? "update" :"submit"}</button>
+          <button className="bg-amber-300 ">
+            {state.Indexno === null ? "submit" : "update"}
+          </button>
         </form>
 
-        {state.data.map((item,index) => 
-        <div key={item}>
-          <li className="bg-amber-400">{item}</li>
-          <span><button onClick={()=>dispatch({type:"delete",payload:item})}>delete</button></span>
-          <span><button onClick={()=>dispatch({type:"edit",payload:{value:item,index:index}})}>Update</button></span>
-        </div>
-        )}
+        <ul>
+          {state.data.map((item, index) => {
+            return (
+              <li key={index}>
+                {item}
+                <button
+                  className="bg-red-300"
+                  onClick={(e) => dispatch({ type: "delete", payload: item })}
+                >
+                  delete
+                </button>
+                <button
+                  className="bg-blue-300"
+                  onClick={(e) => dispatch({ type: "edit", payload: item })}
+                >
+                  edit
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </>
-
   );
 };
